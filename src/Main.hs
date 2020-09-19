@@ -1,0 +1,3 @@
+import RIO
+
+main = pure ()
