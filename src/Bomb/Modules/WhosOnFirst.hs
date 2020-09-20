@@ -1,7 +1,46 @@
 module Bomb.Modules.WhosOnFirst where
 
 import RIO
+import RIO.Char
 import qualified RIO.Map as Map
+
+stepOne :: String -> Maybe String
+stepOne s = wordLocs Map.!? (map toUpper s)
+
+stepTwo :: String -> Maybe [String]
+stepTwo s = wordLists Map.!? (map toUpper s)
+
+wordLocs :: Map.Map String String
+wordLocs = Map.fromList
+  [ ("YES", "middle left"),
+    ("FIRST", "top right"),
+    ("DISPLAY", "bottom right"),
+    ("OKAY", "top right"),
+    ("SAYS", "bottom right"),
+    ("NOTHING", "middle left"),
+    ("-", "bottom left"),
+    ("BLANK", "middle right"),
+    ("NO", "bottom right"),
+    ("LED", "middle left"),
+    ("LEAD", "bottom right"),
+    ("READ", "middle right"),
+    ("RED", "middle right"),
+    ("REED", "bottom left"),
+    ("LEED", "bottom left"),
+    ("HOLD ON", "bottom right"),
+    ("YOU", "middle right"),
+    ("YOU ARE", "bottom right"),
+    ("YOUR", "middle right"),
+    ("YOU'RE", "middle right"),
+    ("UR", "top left"),
+    ("THERE", "bottom right"),
+    ("THEY'RE", "bottom left"),
+    ("THEIR", "middle right"),
+    ("THEY ARE", "middle left"),
+    ("SEE", "bottom right"),
+    ("C", "top right"),
+    ("CEE", "bottom right")
+  ]
 
 wordLists :: Map.Map String [String]
 wordLists = Map.fromList
