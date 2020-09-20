@@ -1,6 +1,7 @@
 module Main where
 
 import Bomb
+import Bomb.Modules.Mazes
 import Bomb.Modules.SimpleWires
 import RIO.Char
 
@@ -57,4 +58,7 @@ loop = do
       ["wires", ws] -> case readSimpleWires ws of
         Just wires -> simpleWires wires >> loop
         Nothing -> output "Simple wires must be one of ['r' (red), 'b' (blue), 'k' (black), 'w' (white), 'y' (yellow)]" >> loop
+      "maze" : ixs -> case maze ixs of
+        Just path -> output (show path) >> loop
+        Nothing -> output "Maze format: \"maze c1Row c1Col c2Row c2Col curLocRow curLocCol dstRow dstCol\""
       _ -> output ("unknown command \"" <> input <> "\"") >> loop

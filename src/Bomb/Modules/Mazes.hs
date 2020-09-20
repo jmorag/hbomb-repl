@@ -1,7 +1,9 @@
-module Mazes where
+module Bomb.Modules.Mazes where
 
 import Data.Array
+import Data.List.Split
 import RIO
+import RIO.Char.Partial
 import qualified RIO.Map as Map
 import qualified RIO.Set as Set
 
@@ -11,6 +13,20 @@ data Boundary = Boundary
     south :: Bool,
     west :: Bool
   }
+
+readMaze :: [String] -> [[Int]]
+readMaze ixs = chunksOf 2 (map digitToInt (concat ixs))
+
+maze :: [String] -> Maybe [String]
+maze ixs =
+  case readMaze ixs of
+    [[circ1Row, circ1Col], [circ2Row, circ2Col], [locRow, locCol], [dstRow, dstCol]] ->
+      let mazeMap =
+            indicesToMaze Map.!? if circ1Row <= circ2Row then ((circ1Row, circ1Col), (circ2Row, circ2Col)) else ((circ2Row, circ2Col), (circ1Row, circ1Col))
+       in case mazeMap of
+            Just mazeMap' -> Just $ findPath (locRow, locCol) (dstRow, dstCol) mazeMap'
+            Nothing -> error "Incorrect circle coordinates"
+    otherwise -> Nothing
 
 findPath :: (Int, Int) -> (Int, Int) -> Array (Int, Int) Boundary -> [String]
 findPath start dst arr = fromMaybe (error "Couldn't find path") $ go mempty start
