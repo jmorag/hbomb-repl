@@ -67,6 +67,7 @@ common shared
     , prettyprinter
     , rio
     , array
+    , split
 
 executable hbomb
   import:         shared
@@ -75,7 +76,6 @@ executable hbomb
   other-modules:
     Bomb
     Bomb.Modules.SimpleWires
+    Bomb.Modules.Mazes
 
   ghc-options:    -O -threaded
-  exposed-modules:
-    Mazes
