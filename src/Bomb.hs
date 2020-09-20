@@ -63,7 +63,7 @@ getLine = Bomb . getInputLine
 initialState :: BombState
 initialState = BombState Nothing Nothing Nothing Nothing 0 Nothing Nothing
 
-data Batteries = LessThanTwo | Two | MoreThanTwo deriving (Show)
+data Batteries = LessThanTwo | Two | MoreThanTwo deriving (Show, Eq)
 
 readBatteries :: String -> Bomb (Maybe Batteries)
 readBatteries = \case
@@ -89,49 +89,45 @@ askBatteries continue = do
       Nothing -> pure ()
       Just n'' -> continue n''
 
-askYesNo :: String -> (Lens' BombState (Maybe Bool)) -> Bomb () -> Bomb ()
-askYesNo message boolLens continue = do
+askYesNo :: String -> (Lens' BombState (Maybe Bool)) -> Bomb () -> Bomb () -> Bomb ()
+askYesNo message boolLens continueTrue continueFalse = do
   yesNo <- getChar $ message <> " [y/n] (q to abort)\n"
   case fmap toLower yesNo of
     Nothing -> pure ()
     Just 'y' -> do
       modify' (set boolLens (Just True))
-      continue
+      continueTrue
     Just 'n' -> do
       modify' (set boolLens (Just False))
-      continue
+      continueFalse
     -- if user hits q, abort asking
     Just 'q' -> pure ()
     Just _ -> do
       output "Please enter 'y' or 'n'"
-      askYesNo message boolLens continue
+      askYesNo message boolLens continueTrue continueFalse
 
-askSerialOdd :: Bomb () -> Bomb ()
+askSerialOdd,
+  askSerialEven,
+  askSerialVowel,
+  askParallel,
+  askFRK,
+  askCAR ::
+    Bomb () -> Bomb () -> Bomb ()
 askSerialOdd =
   askYesNo "Is the last digit of the serial number odd?" $
     lens (fmap not . serialEven) (\st b -> st {serialEven = fmap not b})
-
-askSerialEven :: Bomb () -> Bomb ()
 askSerialEven =
   askYesNo "Is the last digit of the serial number even?" $
     lens serialEven (\st b -> st {serialEven = b})
-
-askSerialVowel :: Bomb () -> Bomb ()
 askSerialVowel =
   askYesNo "Does the serial number have a vowel?" $
     lens serialVowel (\st b -> st {serialVowel = b})
-
-askParallel :: Bomb () -> Bomb ()
 askParallel =
   askYesNo "Does the serial number have a vowel?" $
     lens parallel (\st b -> st {parallel = b})
-
-askFRK :: Bomb () -> Bomb ()
 askFRK =
   askYesNo "Is there a lit indicator with the label FRK?" $
     lens frk (\st b -> st {frk = b})
-
-askCAR :: Bomb () -> Bomb ()
 askCAR =
   askYesNo "Is there a lit indicator with the label CAR?" $
     lens car (\st b -> st {car = b})
