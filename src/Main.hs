@@ -50,6 +50,14 @@ loop = do
         modify' \s -> s {parallel = Just False}
         output "Bomb does NOT have a parallel port"
         loop
+      ["par"] -> do
+        modify' \s -> s {parallel = Just True}
+        output "Bomb has a parallel port"
+        loop
+      ["no", "par"] -> do
+        modify' \s -> s {parallel = Just False}
+        output "Bomb does NOT have a parallel port"
+        loop
       ["strike"] -> do
         modify' \s -> s {strikes = (strikes s) + 1}
         curStrikes <- gets strikes
@@ -59,6 +67,6 @@ loop = do
         Just wires -> simpleWires wires >> loop
         Nothing -> output "Simple wires must be one of ['r' (red), 'b' (blue), 'k' (black), 'w' (white), 'y' (yellow)]" >> loop
       "maze" : ixs -> case maze ixs of
-        Just path -> output (show path) >> loop
-        Nothing -> output "Maze format: \"maze c1Row c1Col c2Row c2Col curLocRow curLocCol dstRow dstCol\""
+        Right path -> output (show path) >> loop
+        Left e -> output e >> loop
       _ -> output ("unknown command \"" <> input <> "\"") >> loop

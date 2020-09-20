@@ -17,16 +17,16 @@ data Boundary = Boundary
 readMaze :: [String] -> [[Int]]
 readMaze ixs = chunksOf 2 (map digitToInt (concat ixs))
 
-maze :: [String] -> Maybe [String]
+maze :: [String] -> Either String [String]
 maze ixs =
   case readMaze ixs of
     [[circ1Row, circ1Col], [circ2Row, circ2Col], [locRow, locCol], [dstRow, dstCol]] ->
       let mazeMap =
             indicesToMaze Map.!? if circ1Row <= circ2Row then ((circ1Row, circ1Col), (circ2Row, circ2Col)) else ((circ2Row, circ2Col), (circ1Row, circ1Col))
        in case mazeMap of
-            Just mazeMap' -> Just $ findPath (locRow, locCol) (dstRow, dstCol) mazeMap'
-            Nothing -> error "Incorrect circle coordinates"
-    otherwise -> Nothing
+            Just mazeMap' -> Right $ findPath (locRow, locCol) (dstRow, dstCol) mazeMap'
+            Nothing -> Left "Incorrect circle coordinates"
+    _ -> Left "Maze format: \"maze c1Row c1Col c2Row c2Col curLocRow curLocCol dstRow dstCol\""
 
 findPath :: (Int, Int) -> (Int, Int) -> Array (Int, Int) Boundary -> [String]
 findPath start dst arr = fromMaybe (error "Couldn't find path") $ go mempty start
@@ -38,10 +38,10 @@ findPath start dst arr = fromMaybe (error "Couldn't find path") $ go mempty star
         Boundary n e s w ->
           asum $
             map
-              ( \(s, loc, b) ->
+              ( \(dir, loc, b) ->
                   if b
                     then Nothing
-                    else (s :) <$> go (Set.insert (x, y) seen) loc
+                    else (dir :) <$> go (Set.insert (x, y) seen) loc
               )
               [ ("up", (x - 1, y), n),
                 ("right", (x, y + 1), e),
@@ -63,6 +63,16 @@ indicesToMaze =
       (((2, 3), (5, 1)), ninthMap)
     ]
 
+firstMap,
+  secondMap,
+  thirdMap,
+  fourthMap,
+  fifthMap,
+  sixthMap,
+  seventhMap,
+  eighthMap,
+  ninthMap ::
+    Array (Int, Int) Boundary
 firstMap =
   listArray
     ((1, 1), (6, 6))
@@ -103,7 +113,6 @@ firstMap =
       Boundary True False True True,
       Boundary False True True False
     ]
-
 secondMap =
   listArray
     ((1, 1), (6, 6))
@@ -144,7 +153,6 @@ secondMap =
       Boundary True False True False,
       Boundary False True True False
     ]
-
 thirdMap =
   listArray
     ((1, 1), (6, 6))
@@ -185,7 +193,6 @@ thirdMap =
       Boundary False False True True,
       Boundary False True True False
     ]
-
 fourthMap =
   listArray
     ((1, 1), (6, 6))
@@ -226,7 +233,6 @@ fourthMap =
       Boundary False True True False,
       Boundary False True True True
     ]
-
 fifthMap =
   listArray
     ((1, 1), (6, 6))
@@ -267,7 +273,6 @@ fifthMap =
       Boundary True False True False,
       Boundary False True True False
     ]
-
 sixthMap =
   listArray
     ((1, 1), (6, 6))
@@ -308,7 +313,6 @@ sixthMap =
       Boundary True False True True,
       Boundary False True True False
     ]
-
 seventhMap =
   listArray
     ((1, 1), (6, 6))
@@ -349,7 +353,6 @@ seventhMap =
       Boundary False False True False,
       Boundary False True True False
     ]
-
 eighthMap =
   listArray
     ((1, 1), (6, 6))
@@ -390,7 +393,6 @@ eighthMap =
       Boundary True False True False,
       Boundary True True True False
     ]
-
 ninthMap =
   listArray
     ((1, 1), (6, 6))
