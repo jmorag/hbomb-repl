@@ -66,6 +66,7 @@ common shared
     , rio
     , prettyprinter
     , haskeline
+    , transformers
 
 executable hbomb
   import:        shared
