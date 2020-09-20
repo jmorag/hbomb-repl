@@ -24,8 +24,8 @@ loop = do
         modify' \s -> s {indicator = Set.insert CAR (indicator s)}
         output "There is a lit indicator CAR"
         loop
-      ["batteries", n] -> bat n >> loop
-      ["bat", n] -> bat n >> loop
+      ["batteries", n] -> readBatteries n >> loop
+      ["bat", n] -> readBatteries n >> loop
       ["wires", ws] -> case readSimpleWires ws of
         Just wires -> simpleWires wires >> loop
         Nothing -> output "Simple wires must be one of ['r' (red), 'b' (blue), 'k' (black), 'w' (white), 'y' (yellow)]" >> loop
