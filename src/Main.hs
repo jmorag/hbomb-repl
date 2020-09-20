@@ -3,7 +3,6 @@ module Main where
 import Bomb
 import Bomb.Modules.SimpleWires
 import RIO.Char
-import qualified RIO.Set as Set
 
 main :: IO ()
 main = runBomb loop initialState
@@ -17,11 +16,11 @@ loop = do
     Just "" -> loop
     Just input -> case words input of
       ["frk"] -> do
-        modify' \s -> s {indicator = Set.insert FRK (indicator s)}
+        modify' \s -> s {frk = Just True}
         output "There is a lit indicator FRK"
         loop
       ["car"] -> do
-        modify' \s -> s {indicator = Set.insert CAR (indicator s)}
+        modify' \s -> s {car = Just True}
         output "There is a lit indicator CAR"
         loop
       ["batteries", n] -> readBatteries n >> loop

@@ -1,7 +1,7 @@
 ---------------------------------------------------
 -- Module : Bomb.Modules.SimpleWires
 ---------------------------------------------------
-module Bomb.Modules.SimpleWires where
+module Bomb.Modules.SimpleWires (simpleWires, readSimpleWires) where
 
 import Bomb
 
@@ -18,7 +18,8 @@ simpleWires wires = do
           | n Blue > 1 -> cut "last blue"
           | otherwise -> cut "last"
     [_, _, _, w4] ->
-      if  | n Red > 1 && serialOdd == Nothing -> askSerialOdd (simpleWires wires)
+      if  | n Red > 1 && serialOdd == Nothing ->
+            askSerialOdd (cut "last") (simpleWires wires)
           | n Red > 1 && serialOdd == Just True -> cut "last"
           | w4 == Yellow && n Red == 0 -> cut "first"
           | n Blue == 1 -> cut "first"
@@ -26,13 +27,15 @@ simpleWires wires = do
           | otherwise -> cut "second"
     [_, _, _, _, w5] ->
       if  | w5 == Black && serialOdd == Just True -> cut "fourth"
-          | w5 == Black && serialOdd == Nothing -> askSerialOdd (simpleWires wires)
+          | w5 == Black && serialOdd == Nothing ->
+            askSerialOdd (cut "fourth") (simpleWires wires)
           | n Red == 1 && n Yellow > 1 -> cut "second"
           | n Black == 0 -> cut "second"
           | otherwise -> cut "first"
     [_, _, _, _, _, _] ->
       if  | n Yellow == 0 && serialOdd == Just True -> cut "third"
-          | n Yellow == 0 && serialOdd == Nothing -> askSerialOdd (simpleWires wires)
+          | n Yellow == 0 && serialOdd == Nothing ->
+            askSerialOdd (cut "third") (simpleWires wires)
           | n Yellow == 1 && n White > 1 -> cut "fourth"
           | n Red == 0 -> cut "last"
           | otherwise -> cut "fourth"
