@@ -78,3 +78,5 @@ executable hbomb
     Bomb.Modules.Button
 
   ghc-options:    -O -threaded
+  exposed-modules:
+    Mazes
