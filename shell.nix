@@ -38,6 +38,7 @@ let
         hlint
         hoogle
         ormolu
+        cabal-fmt
       ]);
   };
   buildInputs = [ ];
