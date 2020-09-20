@@ -80,3 +80,5 @@ executable hbomb
     Bomb.Modules.SimpleWires
 
   ghc-options:    -O -threaded
+  exposed-modules:
+    Mazes
