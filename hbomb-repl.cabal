@@ -66,6 +66,7 @@ common shared
     , mtl
     , prettyprinter
     , rio
+    , array
 
 executable hbomb
   import:         shared
