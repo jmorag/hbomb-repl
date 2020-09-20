@@ -2,12 +2,22 @@
 
 Input:
 
+### Simple Wires
+
 wires r/b/k/w/y
 
-ss [r/g/y/b]
+### Button
+
+button [abort/a/detonate/d/hold/h] [blue/b/white/w/yellow/y/red/r]
+
+### Mazes
 
 maze 1123 4466
 
+### Who's on First
+
+wof1 word (or blank)
+wof2 word
 
 Modules:
 - [x] simple wires
