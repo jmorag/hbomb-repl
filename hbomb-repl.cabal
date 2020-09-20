@@ -67,6 +67,7 @@ common shared
     , mtl
     , prettyprinter
     , rio
+    , array
     , split
 
 executable hbomb
@@ -78,7 +79,6 @@ executable hbomb
     Bomb.Modules.Button
     Bomb.Modules.Mazes
     Bomb.Modules.SimpleWires
+    Bomb.Modules.Mazes
 
   ghc-options:    -O -threaded
-  exposed-modules:
-    Mazes
