@@ -4,11 +4,11 @@ import RIO
 import RIO.Char
 import qualified RIO.Map as Map
 
-stepOne :: String -> Maybe String
-stepOne s = wordLocs Map.!? (map toUpper s)
+wofOne :: String -> Maybe String
+wofOne s = wordLocs Map.!? (map toUpper s)
 
-stepTwo :: String -> Maybe [String]
-stepTwo s = wordLists Map.!? (map toUpper s)
+wofTwo :: String -> Maybe [String]
+wofTwo s = wordLists Map.!? (map toUpper s)
 
 wordLocs :: Map.Map String String
 wordLocs = Map.fromList
@@ -19,6 +19,7 @@ wordLocs = Map.fromList
     ("SAYS", "bottom right"),
     ("NOTHING", "middle left"),
     ("-", "bottom left"),
+    ("", "bottom left"),
     ("BLANK", "middle right"),
     ("NO", "bottom right"),
     ("LED", "middle left"),

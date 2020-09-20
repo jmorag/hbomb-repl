@@ -3,6 +3,7 @@ module Main where
 import Bomb
 import Bomb.Modules.Mazes
 import Bomb.Modules.SimpleWires
+import Bomb.Modules.WhosOnFirst
 import RIO.Char
 
 main :: IO ()
@@ -15,7 +16,8 @@ loop = do
     Nothing -> return ()
     Just "quit" -> return ()
     Just "" -> loop
-    Just input -> case words input of
+    Just input -> do
+      case words input of
       ["frk"] -> do
         modify' \s -> s {frk = Just True}
         output "There is a lit indicator FRK"
@@ -69,4 +71,10 @@ loop = do
       "maze" : ixs -> case maze ixs of
         Right path -> output (show path) >> loop
         Left e -> output e >> loop
+      "wof1" : w -> case wofOne (unwords w) of
+        Just dir -> output dir >> loop
+        Nothing -> output "Unknown word" >> loop
+      "wof2" : w -> case wofTwo (unwords w) of
+        Just l -> output (show l) >> loop
+        Nothing -> output "Unknown word" >> loop
       _ -> output ("unknown command \"" <> input <> "\"") >> loop
