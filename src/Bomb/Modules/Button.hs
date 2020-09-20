@@ -38,6 +38,7 @@ readButton [text, color] =
         "r" -> Just Red
         _ -> Nothing
     )
+readButton _ = Nothing
 
 button :: Button -> Bomb ()
 button b@(text, color) = do
@@ -50,13 +51,15 @@ button b@(text, color) = do
         LessThanTwo -> button b
         _ -> press
       | color == White && c == Just True -> hold
-      | color == White && c == Nothing -> askCAR (button b)
+      | color == White && c == Nothing -> askCAR hold (button b)
       | bats == Just MoreThanTwo && f == Just True -> press
       | bats == Nothing && f == Just True -> askBatteries \case
         MoreThanTwo -> press
         _ -> button b
-      | bats == Just MoreThanTwo && f == Nothing -> askFRK (button b)
-      | bats == Nothing && f == Nothing -> askFRK (button b)
+      | bats == Just MoreThanTwo && f == Nothing -> askFRK press (button b)
+      | bats == Nothing && f == Nothing -> askBatteries \case
+        MoreThanTwo -> askFRK press (button b)
+        _ -> button b
       | color == Yellow -> hold
       | b == (Hold, Red) -> press
       | otherwise -> hold

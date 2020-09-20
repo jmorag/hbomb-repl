@@ -79,7 +79,6 @@ executable hbomb
     Bomb.Modules.Button
     Bomb.Modules.Mazes
     Bomb.Modules.SimpleWires
-    Bomb.Modules.Mazes
     Bomb.Modules.WhosOnFirst
 
   ghc-options:    -O -threaded
