@@ -67,7 +67,6 @@ common shared
     , mtl
     , prettyprinter
     , rio
-    , array
     , split
 
 executable hbomb
@@ -77,6 +76,7 @@ executable hbomb
   other-modules:
     Bomb
     Bomb.Modules.Button
+    Bomb.Modules.Knobs
     Bomb.Modules.Mazes
     Bomb.Modules.SimpleWires
     Bomb.Modules.WhosOnFirst

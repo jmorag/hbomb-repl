@@ -19,6 +19,9 @@ maze 1123 4466
 wof1 word (or blank)
 wof2 word
 
+### Knobs
+knobs 101100
+
 Modules:
 - [x] simple wires
 - [x] button
@@ -31,4 +34,4 @@ Modules:
 - [] wire sequence
 - [] mazes
 - [] passwords?
-- [] knobs
+- [x] knobs
