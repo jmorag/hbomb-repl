@@ -17,7 +17,12 @@ maze 1123 4466
 ### Who's on First
 
 wof1 word (or blank)
+
 wof2 word
+
+### Complicated Wires
+
+comp [red/r/blue/b/star/s/led/l] [...]
 
 ### Knobs
 knobs 101100
@@ -33,8 +38,8 @@ Modules:
 - [x] who's on first
 - [] memory
 - [] morse code
-- [] complicated wires
+- [x] complicated wires
 - [] wire sequence
-- [] mazes
+- [x] mazes
 - [x] passwords?
 - [x] knobs
