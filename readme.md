@@ -27,6 +27,9 @@ comp [red/r/blue/b/star/s/led/l] [...]
 ### Knobs
 knobs 101100
 
+### Passwords
+pass hcw _ _ _ edlkjh
+
 Modules:
 - [x] simple wires
 - [x] button
@@ -38,5 +41,5 @@ Modules:
 - [x] complicated wires
 - [] wire sequence
 - [x] mazes
-- [] passwords?
+- [x] passwords?
 - [x] knobs
