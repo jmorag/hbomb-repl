@@ -4,6 +4,7 @@ import Bomb
 import Bomb.Modules.Button
 import Bomb.Modules.Knobs
 import Bomb.Modules.Mazes
+import Bomb.Modules.Passwords
 import Bomb.Modules.SimpleWires
 import Bomb.Modules.WhosOnFirst
 import RIO.Char
@@ -72,5 +73,6 @@ loop = do
           Just l -> output (show l)
           Nothing -> output "Unknown word"
         ["knobs", ks] -> knobs ks
+        "pass" : i -> passwords i
         _ -> output ("unknown command \"" <> input <> "\"")
       loop

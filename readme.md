@@ -22,6 +22,9 @@ wof2 word
 ### Knobs
 knobs 101100
 
+### Passwords
+pass hcw _ _ _ edlkjh
+
 Modules:
 - [x] simple wires
 - [x] button
@@ -33,5 +36,5 @@ Modules:
 - [] complicated wires
 - [] wire sequence
 - [] mazes
-- [] passwords?
+- [x] passwords?
 - [x] knobs
