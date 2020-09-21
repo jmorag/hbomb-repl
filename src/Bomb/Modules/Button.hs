@@ -1,7 +1,7 @@
 ---------------------------------------------------
 -- Module : Bomb.Modules.Button
 ---------------------------------------------------
-module Bomb.Modules.Button where
+module Bomb.Modules.Button (readButton, button) where
 
 import Bomb
 import RIO.Char
@@ -45,7 +45,8 @@ button b@(text, color) = do
   bats <- gets batteries
   c <- gets car
   f <- gets frk
-  if  | b == (Abort, Blue) -> hold
+  if
+      | b == (Abort, Blue) -> hold
       | text == Detonate && bats `elem` [Just Two, Just MoreThanTwo] -> press
       | text == Detonate && bats == Nothing -> askBatteries \case
         LessThanTwo -> button b
