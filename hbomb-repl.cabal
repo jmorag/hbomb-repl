@@ -80,5 +80,6 @@ executable hbomb
     Bomb.Modules.Mazes
     Bomb.Modules.SimpleWires
     Bomb.Modules.WhosOnFirst
+    Bomb.Modules.ComplicatedWires
 
   ghc-options:    -O -threaded
