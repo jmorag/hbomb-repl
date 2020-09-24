@@ -2,11 +2,11 @@ module Main where
 
 import Bomb
 import Bomb.Modules.Button
+import Bomb.Modules.ComplicatedWires
 import Bomb.Modules.Knobs
 import Bomb.Modules.Mazes
 import Bomb.Modules.Passwords
 import Bomb.Modules.SimpleWires
-import Bomb.Modules.ComplicatedWires
 import Bomb.Modules.WhosOnFirst
 import RIO.Char
 
@@ -22,14 +22,22 @@ loop = do
     Just "" -> loop
     Just input -> do
       case words input of
+        ["reset"] -> put initialState >> output "RESET"
+        ["dump"] -> gets show >>= output
         ["frk"] -> do
           modify' \s -> s {frk = Just True}
           output "There is a lit indicator FRK"
         ["car"] -> do
           modify' \s -> s {car = Just True}
           output "There is a lit indicator CAR"
-        ["batteries", n] -> void $ readBatteries n
-        ["bat", n] -> void $ readBatteries n
+        ["nofrk"] -> do
+          modify' \s -> s {frk = Just False}
+          output "There is NO lit indicator FRK"
+        ["nocar"] -> do
+          modify' \s -> s {car = Just False}
+          output "There is NO lit indicator CAR"
+        ["batteries", n] -> readBatteries n
+        ["bat", n] -> readBatteries n
         "button" : rest -> case readButton rest of
           Just b -> button b
           Nothing -> output "Usage: button <text> <color>"
@@ -60,7 +68,7 @@ loop = do
         ["strike"] -> do
           modify' \s -> s {strikes = (strikes s) + 1}
           curStrikes <- gets strikes
-          output ((show curStrikes) ++ " strikes")
+          output ((show curStrikes) ++ " strike" ++ if curStrikes == 1 then "" else "s")
         ["wires", ws] -> case readSimpleWires ws of
           Just wires -> simpleWires wires
           Nothing -> output "Simple wires must be one of ['r' (red), 'b' (blue), 'k' (black), 'w' (white), 'y' (yellow)]"
@@ -78,3 +86,17 @@ loop = do
         "comp" : w -> complicated w
         _ -> output ("unknown command \"" <> input <> "\"")
       loop
+
+readBatteries :: String -> Bomb ()
+readBatteries = \case
+  "gt2" -> modify' \s -> s {batteries = Just MoreThanTwo}
+  ">2" -> modify' \s -> s {batteries = Just MoreThanTwo}
+  "2" -> modify' \s -> s {batteries = Just Two}
+  "0" -> modify' \s -> s {batteries = Just LessThanTwo}
+  "1" -> modify' \s -> s {batteries = Just LessThanTwo}
+  n -> case readMaybe @Int n of
+    Just n'
+      | n' < 0 -> output "Can't have negative batteries"
+      | n' > 2 -> modify' \s -> s {batteries = Just MoreThanTwo}
+      | otherwise -> error "unreachable"
+    Nothing -> output "Please enter a number"

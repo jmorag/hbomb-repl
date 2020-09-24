@@ -9,40 +9,35 @@ data SimpleWire = Red | Black | White | Yellow | Blue
   deriving (Show, Eq)
 
 simpleWires :: [SimpleWire] -> Bomb ()
-simpleWires wires = do
-  serialOdd <- (fmap not) <$> (gets serialEven)
-  case wires of
-    [_, _, w3] ->
-      if  | n Red == 0 -> cut "second"
-          | w3 == White -> cut "last"
-          | n Blue > 1 -> cut "last blue"
-          | otherwise -> cut "last"
-    [_, _, _, w4] ->
-      if  | n Red > 1 && serialOdd == Nothing ->
-            askSerialOdd (cut "last") (simpleWires wires)
-          | n Red > 1 && serialOdd == Just True -> cut "last"
-          | w4 == Yellow && n Red == 0 -> cut "first"
-          | n Blue == 1 -> cut "first"
-          | n Yellow > 1 -> cut "last"
-          | otherwise -> cut "second"
-    [_, _, _, _, w5] ->
-      if  | w5 == Black && serialOdd == Just True -> cut "fourth"
-          | w5 == Black && serialOdd == Nothing ->
-            askSerialOdd (cut "fourth") (simpleWires wires)
-          | n Red == 1 && n Yellow > 1 -> cut "second"
-          | n Black == 0 -> cut "second"
-          | otherwise -> cut "first"
-    [_, _, _, _, _, _] ->
-      if  | n Yellow == 0 && serialOdd == Just True -> cut "third"
-          | n Yellow == 0 && serialOdd == Nothing ->
-            askSerialOdd (cut "third") (simpleWires wires)
-          | n Yellow == 1 && n White > 1 -> cut "fourth"
-          | n Red == 0 -> cut "last"
-          | otherwise -> cut "fourth"
-    _ -> output "Bomb must have 3, 4, 5, or 6 wires"
+simpleWires wires = case wires of
+  [_, _, w3]
+    | n Red == 0 -> cut "second"
+    | w3 == White -> cut "last"
+    | n Blue > 1 -> cut "last blue"
+    | otherwise -> cut "last"
+  [_, _, _, w4] | n Red > 1 -> withSerialOdd \case True -> cut "last"; False -> k4 w4
+  [_, _, _, w4] -> k4 w4
+  [_, _, _, _, Black] -> withSerialOdd \case True -> cut "fourth"; False -> k5
+  [_, _, _, _, _] -> k5
+  [_, _, _, _, _, _] | n Yellow == 0 -> withSerialOdd \case True -> cut "third"; False -> k6
+  [_, _, _, _, _, _] -> k6
+  _ -> output "Bomb must have 3, 4, 5, or 6 wires"
   where
     n color = length (filter (== color) wires)
     cut nth = output ("Cut the " <> nth <> " wire")
+    k4 w4
+      | w4 == Yellow && n Red == 0 = cut "first"
+      | n Blue == 1 = cut "first"
+      | n Yellow > 1 = cut "last"
+      | otherwise = cut "second"
+    k5
+      | n Red == 1 && n Yellow > 1 = cut "second"
+      | n Black == 0 = cut "second"
+      | otherwise = cut "first"
+    k6
+      | n Yellow == 1 && n White > 1 = cut "fourth"
+      | n Red == 0 = cut "last"
+      | otherwise = cut "fourth"
 
 readSimpleWires :: String -> Maybe [SimpleWire]
 readSimpleWires = traverse \case
