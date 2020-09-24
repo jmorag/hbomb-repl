@@ -10,16 +10,14 @@ module Bomb
     initialState,
     getLine,
     getChar,
-    askYesNo,
-    askSerialOdd,
-    askSerialEven,
-    askSerialVowel,
-    askParallel,
-    askBatteries,
-    askCAR,
-    askFRK,
+    withSerialOdd,
+    withSerialEven,
+    withSerialVowel,
+    withParallel,
+    withBatteries,
+    withCAR,
+    withFRK,
     Batteries (..),
-    readBatteries,
     output,
     module X,
     runBomb,
@@ -28,7 +26,6 @@ where
 
 import Control.Monad.State.Strict as X
 import RIO as X
-import RIO.Char
 import System.Console.Haskeline
 
 data BombState = BombState
@@ -65,69 +62,56 @@ initialState = BombState Nothing Nothing Nothing Nothing 0 Nothing Nothing
 
 data Batteries = LessThanTwo | Two | MoreThanTwo deriving (Show, Eq)
 
-readBatteries :: String -> Bomb (Maybe Batteries)
-readBatteries = \case
-  "gt2" -> Just MoreThanTwo <$ modify' \s -> s {batteries = Just MoreThanTwo}
-  ">2" -> Just MoreThanTwo <$ modify' \s -> s {batteries = Just MoreThanTwo}
-  "2" -> Just Two <$ modify' \s -> s {batteries = Just Two}
-  "0" -> Just LessThanTwo <$ modify' \s -> s {batteries = Just LessThanTwo}
-  "1" -> Just LessThanTwo <$ modify' \s -> s {batteries = Just LessThanTwo}
-  n -> case readMaybe @Int n of
-    Just n'
-      | n' < 0 -> Nothing <$ output "Can't have negative batteries"
-      | n' > 2 -> Just MoreThanTwo <$ modify' \s -> s {batteries = Just MoreThanTwo}
-      | otherwise -> error "unreachable"
-    Nothing -> Nothing <$ output ("Couldn't decipher number of batteries: " <> n)
+withPossiblyUnknown :: String -> (Lens' BombState (Maybe a)) -> (Char -> Maybe a) -> (a -> Bomb ()) -> Bomb ()
+withPossiblyUnknown message len parseResponse cont =
+  gets (view len) >>= \case
+    Just x -> cont x
+    Nothing ->
+      getChar (message <> " (Press any other key to abort)\n") <&> join . fmap parseResponse >>= \case
+        Nothing -> pure ()
+        Just r -> modify' (set len (Just r)) >> cont r
 
-askBatteries :: (Batteries -> Bomb ()) -> Bomb ()
-askBatteries continue = do
-  n <- getChar "How many batteries are there? [0/1/2/3 (or more)] (q to abort)\n"
-  case n of
-    Just 'q' -> pure ()
-    Nothing -> pure ()
-    Just n' -> readBatteries [n'] >>= \case
-      Nothing -> pure ()
-      Just n'' -> continue n''
+withBatteries :: (Batteries -> Bomb ()) -> Bomb ()
+withBatteries =
+  withPossiblyUnknown
+    "How many batteries are there? [0/1/2/3 (or more)]"
+    (lens batteries (\st b -> st {batteries = b}))
+    \r ->
+      if
+          | r `elem` ("01" :: String) -> Just LessThanTwo
+          | r `elem` ("3456789" :: String) -> Just MoreThanTwo
+          | r == '2' -> Just Two
+          | otherwise -> Nothing
 
-askYesNo :: String -> (Lens' BombState (Maybe Bool)) -> Bomb () -> Bomb () -> Bomb ()
-askYesNo message boolLens continueTrue continueFalse = do
-  yesNo <- getChar $ message <> " [y/n] (q to abort)\n"
-  case fmap toLower yesNo of
-    Nothing -> pure ()
-    Just 'y' -> do
-      modify' (set boolLens (Just True))
-      continueTrue
-    Just 'n' -> do
-      modify' (set boolLens (Just False))
-      continueFalse
-    -- if user hits q, abort asking
-    Just 'q' -> pure ()
-    Just _ -> do
-      output "Please enter 'y' or 'n'"
-      askYesNo message boolLens continueTrue continueFalse
+withBool :: String -> (Lens' BombState (Maybe Bool)) -> (Bool -> Bomb ()) -> Bomb ()
+withBool message len =
+  withPossiblyUnknown (message <> " [y/n]") len \case
+    'y' -> Just True
+    'n' -> Just False
+    _ -> Nothing
 
-askSerialOdd,
-  askSerialEven,
-  askSerialVowel,
-  askParallel,
-  askFRK,
-  askCAR ::
-    Bomb () -> Bomb () -> Bomb ()
-askSerialOdd =
-  askYesNo "Is the last digit of the serial number odd?" $
+withSerialOdd,
+  withSerialEven,
+  withSerialVowel,
+  withParallel,
+  withFRK,
+  withCAR ::
+    (Bool -> Bomb ()) -> Bomb ()
+withSerialOdd =
+  withBool "Is the last digit of the serial number odd?" $
     lens (fmap not . serialEven) (\st b -> st {serialEven = fmap not b})
-askSerialEven =
-  askYesNo "Is the last digit of the serial number even?" $
+withSerialEven =
+  withBool "Is the last digit of the serial number even?" $
     lens serialEven (\st b -> st {serialEven = b})
-askSerialVowel =
-  askYesNo "Does the serial number have a vowel?" $
+withSerialVowel =
+  withBool "Does the serial number have a vowel?" $
     lens serialVowel (\st b -> st {serialVowel = b})
-askParallel =
-  askYesNo "Does the serial number have a vowel?" $
+withParallel =
+  withBool "Does the serial number have a vowel?" $
     lens parallel (\st b -> st {parallel = b})
-askFRK =
-  askYesNo "Is there a lit indicator with the label FRK?" $
+withFRK =
+  withBool "Is there a lit indicator with the label FRK?" $
     lens frk (\st b -> st {frk = b})
-askCAR =
-  askYesNo "Is there a lit indicator with the label CAR?" $
+withCAR =
+  withBool "Is there a lit indicator with the label CAR?" $
     lens car (\st b -> st {car = b})

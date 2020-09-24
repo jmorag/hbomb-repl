@@ -76,11 +76,11 @@ executable hbomb
   other-modules:
     Bomb
     Bomb.Modules.Button
+    Bomb.Modules.ComplicatedWires
     Bomb.Modules.Knobs
     Bomb.Modules.Mazes
     Bomb.Modules.Passwords
     Bomb.Modules.SimpleWires
     Bomb.Modules.WhosOnFirst
-    Bomb.Modules.ComplicatedWires
 
   ghc-options:    -O -threaded
