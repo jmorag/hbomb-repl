@@ -14,15 +14,17 @@ button [abort/a/detonate/d/hold/h] [blue/b/white/w/yellow/y/red/r]
 
 maze 1123 4466
 
-### Memory
-mem 1
-What is the label? 
-
 ### Who's on First
 
 wof1 word (or blank)
 
 wof2 word
+
+### Memory
+
+mem 1
+What is the label? 
+
 
 ### Complicated Wires
 
@@ -40,7 +42,7 @@ Modules:
 - [] keypads
 - [] simon says
 - [x] who's on first
-- [] memory
+- [x] memory
 - [] morse code
 - [x] complicated wires
 - [] wire sequence
