@@ -18,6 +18,8 @@ module Bomb
     withCAR,
     withFRK,
     Batteries (..),
+    Position (..),
+    Label (..),
     output,
     module X,
     runBomb,
@@ -35,7 +37,8 @@ data BombState = BombState
     parallel :: !(Maybe Bool),
     strikes :: !Int,
     frk :: !(Maybe Bool),
-    car :: !(Maybe Bool)
+    car :: !(Maybe Bool),
+    memory :: !(Seq (Position, Label))
   }
   deriving (Show)
 
@@ -58,9 +61,37 @@ getLine :: String -> Bomb (Maybe String)
 getLine = Bomb . getInputLine
 
 initialState :: BombState
-initialState = BombState Nothing Nothing Nothing Nothing 0 Nothing Nothing
+initialState = BombState Nothing Nothing Nothing Nothing 0 Nothing Nothing mempty
 
 data Batteries = LessThanTwo | Two | MoreThanTwo deriving (Show, Eq)
+
+newtype Position = Position Int
+  deriving (Eq, Show)
+
+instance Num Position where
+  fromInteger i =
+    if i `elem` [1 .. 4]
+      then Position (fromIntegral i)
+      else error "Position must be 1,2,3, or 4"
+  (+) = error "Not implemented"
+  (*) = error "Not implemented"
+  abs = error "Not implemented"
+  signum = error "Not implemented"
+  negate = error "Not implemented"
+
+newtype Label = Label Int
+  deriving (Eq, Show)
+
+instance Num Label where
+  fromInteger i =
+    if i `elem` [1 .. 4]
+      then Label (fromIntegral i)
+      else error "Label must be 1,2,3, or 4"
+  (+) = error "Not implemented"
+  (*) = error "Not implemented"
+  abs = error "Not implemented"
+  signum = error "Not implemented"
+  negate = error "Not implemented"
 
 withPossiblyUnknown :: String -> (Lens' BombState (Maybe a)) -> (Char -> Maybe a) -> (a -> Bomb ()) -> Bomb ()
 withPossiblyUnknown message len parseResponse cont =

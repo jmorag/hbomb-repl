@@ -79,6 +79,7 @@ executable hbomb
     Bomb.Modules.ComplicatedWires
     Bomb.Modules.Knobs
     Bomb.Modules.Mazes
+    Bomb.Modules.Memory
     Bomb.Modules.Passwords
     Bomb.Modules.SimpleWires
     Bomb.Modules.WhosOnFirst

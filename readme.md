@@ -20,6 +20,12 @@ wof1 word (or blank)
 
 wof2 word
 
+### Memory
+
+mem 1
+What is the label? 
+
+
 ### Complicated Wires
 
 comp [red/r/blue/b/star/s/led/l] [...]
@@ -36,7 +42,7 @@ Modules:
 - [] keypads
 - [] simon says
 - [x] who's on first
-- [] memory
+- [x] memory
 - [] morse code
 - [x] complicated wires
 - [] wire sequence
