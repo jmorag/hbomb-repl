@@ -6,6 +6,7 @@ import Bomb.Modules.ComplicatedWires
 import Bomb.Modules.Knobs
 import Bomb.Modules.Mazes
 import Bomb.Modules.Memory
+import Bomb.Modules.MorseCode
 import Bomb.Modules.Passwords
 import Bomb.Modules.SimpleWires
 import Bomb.Modules.WhosOnFirst
@@ -93,6 +94,8 @@ loop = do
         ["knobs", ks] -> knobs ks
         "pass" : i -> passwords i
         "comp" : w -> complicated w
+        "morse" : m -> morse m
+        "omorse" : m -> omorse m
         _ -> output ("unknown command \"" <> input <> "\"")
       loop
 

@@ -83,5 +83,6 @@ executable hbomb
     Bomb.Modules.Passwords
     Bomb.Modules.SimpleWires
     Bomb.Modules.WhosOnFirst
+    Bomb.Modules.MorseCode
 
   ghc-options:    -O -threaded
