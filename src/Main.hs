@@ -5,6 +5,7 @@ import Bomb.Modules.Button
 import Bomb.Modules.ComplicatedWires
 import Bomb.Modules.Knobs
 import Bomb.Modules.Mazes
+import Bomb.Modules.Memory
 import Bomb.Modules.Passwords
 import Bomb.Modules.SimpleWires
 import Bomb.Modules.WhosOnFirst
@@ -65,6 +66,14 @@ loop = do
         ["no", "par"] -> do
           modify' \s -> s {parallel = Just False}
           output "Bomb does NOT have a parallel port"
+        ["mem", "reset"] -> do
+          output "Reset Memory"
+          modify' \s -> s {memory = mempty}
+        ["memory", "reset"] -> do
+          output "Reset Memory"
+          modify' \s -> s {memory = mempty}
+        ["mem", n] -> mem n
+        ["memory", n] -> mem n
         ["strike"] -> do
           modify' \s -> s {strikes = (strikes s) + 1}
           curStrikes <- gets strikes
