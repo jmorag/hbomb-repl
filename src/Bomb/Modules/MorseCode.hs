@@ -2,9 +2,8 @@ module Bomb.Modules.MorseCode (morse, omorse) where
 
 import Bomb
 import Data.Foldable (find)
-import RIO.Char
+import RIO.List (findIndex, sortOn)
 import qualified RIO.Map as Map
-import qualified RIO.Set as Set
 
 -- Does not include alphabet letters that appear in no words in possibilities
 alphabet :: Map.Map String Char
@@ -52,27 +51,40 @@ possibilities =
     ]
 
 morse :: [String] -> Bomb ()
-morse s = case traverse (alphabet Map.!?) s of
-  Just chars ->
-    let opts = Map.filterWithKey (\word _ -> all (\c -> c `elem` word) chars) possibilities
-     in output $ show opts
-  Nothing -> output $ "Invalid morse character: " ++ findFailureChar s
+morse s = morseHelper s substringWrap
 
-isOrderedSubstring :: String -> String -> Bool
-isOrderedSubstring [] _ = True
-isOrderedSubstring _ [] = False
-isOrderedSubstring (c : cs) (w : ws) =
-  if c == w
-    then isOrderedSubstring cs ws
-    else isOrderedSubstring (c : cs) ws
-
---- This is ordered morse. Letters must be in order.
+-- like morse, but without wrapping
 omorse :: [String] -> Bomb ()
-omorse s = case traverse (alphabet Map.!?) s of
+omorse s = morseHelper s substring
+
+morseHelper :: [String] -> (String -> String -> Bool) -> Bomb ()
+morseHelper s f = case traverse (alphabet Map.!?) s of
   Just chars ->
-    let opts = Map.filterWithKey (\word _ -> isOrderedSubstring chars word) possibilities
-     in output $ show opts
+    let opts = Map.filterWithKey (\word _ -> f chars word) possibilities
+     in output $ show (sortOn snd $ Map.toList opts)
   Nothing -> output $ "Invalid morse character: " ++ findFailureChar s
+
+-- | Checks if chars appear in the order they were entered in the word.
+--
+-- Wrapping is allowed, but only once, ex.
+--
+-- >>> substringWrap "rvecto" "vector"
+-- True
+-- >>> substringWrap "rvector" "vector"
+-- False
+substringWrap :: String -> String -> Bool
+substringWrap [] _ = True
+substringWrap (hd : rest) word = case findIndex (== hd) word of
+  Nothing -> False
+  Just i -> substring rest (drop i word <> take i word)
+
+substring :: String -> String -> Bool
+substring [] _ = True
+substring _ [] = False
+substring (c : cs) (w : ws) =
+  if c == w
+    then substring cs ws
+    else substring (c : cs) ws
 
 findFailureChar :: [String] -> String
 findFailureChar s = case find (\letter -> Map.notMember letter alphabet) s of
