@@ -23,9 +23,9 @@ What is the label?
 
 ### Morse Code
 
-Unordered Morse
+Wrapped Morse
 
-Letters may appear in any order in the word.
+Letters may wrap around the word.
 
 `morse .- .-..`
 
@@ -33,7 +33,8 @@ returns `[("halls",3.515),("leaks",3.542)]`
 
 Ordered Morse
 
-Letters must appear in sequential order in the word. For example, entering letters s, t, k:
+Letters must appear in sequential order in the word and cannot wrap around the ends.
+For example, entering letters s, t, k:
 
 `omorse ... - -.-`
 
