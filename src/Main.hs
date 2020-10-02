@@ -8,6 +8,7 @@ import Bomb.Modules.Mazes
 import Bomb.Modules.Memory
 import Bomb.Modules.MorseCode
 import Bomb.Modules.Passwords
+import Bomb.Modules.SimonSays
 import Bomb.Modules.SimpleWires
 import Bomb.Modules.WhosOnFirst
 import Bomb.Modules.WireSequence
@@ -82,6 +83,10 @@ loop = do
         "seq" : ws -> case readSeq ws of
           Nothing -> output "Wire sequence: seq ra bb kc (red a, blue b, black c)"
           Just ws' -> wireSeq ws'
+        ["simon"] -> simonAll
+        ["simon", cs] -> case readSimon cs of
+          Nothing -> output "Usage: simon rgby"
+          Just colors -> simon colors
         ["strike"] -> do
           modify' \s -> s {strikes = (strikes s) + 1}
           curStrikes <- gets strikes

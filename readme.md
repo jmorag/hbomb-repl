@@ -10,6 +10,19 @@ wires r/b/k/w/y
 
 button [abort/a/detonate/d/hold/h] [blue/b/white/w/yellow/y/red/r]
 
+
+### Simon says
+simon
+-----------------
+| R | B | G | Y |
+-----------------
+| B | R | Y | G |
+-----------------
+
+simon rbg
+[Blue, Red, Yellow]
+
+
 ### Who's on First
 
 wof1 word (or blank)
@@ -65,7 +78,7 @@ Modules:
 - [x] simple wires
 - [x] button
 - [] keypads
-- [] simon says
+- [x] simon says
 - [x] who's on first
 - [x] memory
 - [x] morse code
