@@ -141,7 +141,7 @@ withSerialVowel =
   withBool "Does the serial number have a vowel?" $
     lens serialVowel (\st b -> st {serialVowel = b})
 withParallel =
-  withBool "Does the serial number have a vowel?" $
+  withBool "Does the bomb have a parallel port?" $
     lens parallel (\st b -> st {parallel = b})
 withFRK =
   withBool "Is there a lit indicator with the label FRK?" $
