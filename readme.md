@@ -12,14 +12,14 @@ button [abort/a/detonate/d/hold/h] [blue/b/white/w/yellow/y/red/r]
 
 
 ### Simon says
-simon
+hbomb> simon
 -----------------
 | R | B | G | Y |
 -----------------
 | B | R | Y | G |
 -----------------
 
-simon rbg
+hbomb> simon rbg
 [Blue, Red, Yellow]
 
 
