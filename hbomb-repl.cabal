@@ -81,10 +81,11 @@ executable hbomb
     Bomb.Modules.Knobs
     Bomb.Modules.Mazes
     Bomb.Modules.Memory
+    Bomb.Modules.MorseCode
     Bomb.Modules.Passwords
+    Bomb.Modules.SimonSays
     Bomb.Modules.SimpleWires
     Bomb.Modules.WhosOnFirst
     Bomb.Modules.WireSequence
-    Bomb.Modules.MorseCode
 
   ghc-options:    -O -threaded
