@@ -6,7 +6,7 @@ module Bomb.Modules.Button (readButton, button) where
 import Bomb
 import RIO.Char (toLower)
 
-data ButtonText = Abort | Detonate | Hold
+data ButtonText = Abort | Detonate | Hold | Press
   deriving (Eq)
 
 data ButtonColor = Blue | White | Yellow | Red
@@ -25,6 +25,8 @@ readButton [text, color] =
       "d" -> Just Detonate
       "hold" -> Just Hold
       "h" -> Just Hold
+      "press" -> Just Press
+      "p" -> Just Press
       _ -> Nothing
     case map toLower color of
       "blue" -> Just Blue
