@@ -10,6 +10,7 @@ import Bomb.Modules.MorseCode
 import Bomb.Modules.Passwords
 import Bomb.Modules.SimpleWires
 import Bomb.Modules.WhosOnFirst
+import Bomb.Modules.WireSequence
 import RIO.Char
 
 main :: IO ()
@@ -75,6 +76,12 @@ loop = do
           modify' \s -> s {memory = mempty}
         ["mem", n] -> mem n
         ["memory", n] -> mem n
+        ["seq", "reset"] -> do
+          output "Reset Wire Sequence"
+          modify' \s -> s {redSeq = 0, blueSeq = 0, blackSeq = 0}
+        "seq" : ws -> case readSeq ws of
+          Nothing -> output "Wire sequence: seq ra bb kc (red a, blue b, black c)"
+          Just ws' -> wireSeq ws'
         ["strike"] -> do
           modify' \s -> s {strikes = (strikes s) + 1}
           curStrikes <- gets strikes
