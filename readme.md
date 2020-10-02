@@ -44,6 +44,10 @@ returns `[("steak", 3.582)]`
 
 comp [red/r/blue/b/star/s/led/l] [...]
 
+### Wire Sequence
+
+seq ra bb kc
+
 ### Mazes
 
 maze 1123 4466
@@ -66,7 +70,7 @@ Modules:
 - [x] memory
 - [x] morse code
 - [x] complicated wires
-- [] wire sequence
+- [x] wire sequence
 - [x] mazes
 - [x] passwords?
 - [x] knobs

@@ -65,6 +65,7 @@ common shared
     , base           ^>=4.13
     , haskeline
     , mtl
+    , transformers
     , prettyprinter
     , rio
     , split
@@ -83,6 +84,7 @@ executable hbomb
     Bomb.Modules.Passwords
     Bomb.Modules.SimpleWires
     Bomb.Modules.WhosOnFirst
+    Bomb.Modules.WireSequence
     Bomb.Modules.MorseCode
 
   ghc-options:    -O -threaded
