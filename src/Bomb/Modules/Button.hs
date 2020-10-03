@@ -41,24 +41,16 @@ readButton [text, color] =
 readButton _ = Nothing
 
 button :: Button -> Bomb ()
-button b = case b of
-  (Abort, Blue) -> hold
-  (Detonate, _) -> withBatteries \case
-    LessThanTwo -> step3
-    _ -> press
-  _ -> step3
-  where
-    step3 = case b of
-      (_, White) -> withCAR \case True -> hold; False -> step4
-      _ -> step4
-    step4 = do
-      withBatteries \case
-        MoreThanTwo -> withFRK \case True -> press; False -> step5
-        _ -> step5
-    step5 = case b of
-      (_, Yellow) -> hold
-      (Hold, Red) -> press
-      _ -> hold
+button b@(text, color) =
+  condM
+    [ (just (b == (Abort, Blue)), hold),
+      (just (text == Detonate) &&& (askBatteries (/= LessThanTwo)), press),
+      (just (color == White) &&& askCAR, hold),
+      (askBatteries (== MoreThanTwo) &&& askFRK, press),
+      (just (color == Yellow), hold),
+      (just (b == (Hold, Red)), press),
+      (just True, hold)
+    ]
 
 press :: Bomb ()
 press = output "Press and immediately release the button"
