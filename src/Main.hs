@@ -34,10 +34,10 @@ loop = do
         ["car"] -> do
           modify' \s -> s {car = Just True}
           output "There is a lit indicator CAR"
-        ["nofrk"] -> do
+        ["no", "frk"] -> do
           modify' \s -> s {frk = Just False}
           output "There is NO lit indicator FRK"
-        ["nocar"] -> do
+        ["no", "car"] -> do
           modify' \s -> s {car = Just False}
           output "There is NO lit indicator CAR"
         ["batteries", n] -> readBatteries n
