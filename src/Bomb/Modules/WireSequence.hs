@@ -102,7 +102,7 @@ processColors [(c1, False), (c2, True), (c3, True)]
 processColors [(c1, False), (c2, True), (c3, False)]
   | c1 == c2 = "Cut the second " <> show c2 <> " wire"
   | c2 == c3 = "Cut the first " <> show c2 <> " wire"
-  | otherwise = "Cut the " <> show c3 <> " wire"
+  | otherwise = "Cut the " <> show c2 <> " wire"
 processColors [(c1, False), (c2, False), (c3, True)]
   | c1 == c3 && c2 == c3 = "Cut the third " <> show c3 <> " wire"
   | c1 == c3 || c2 == c3 = "Cut the second " <> show c3 <> " wire"
