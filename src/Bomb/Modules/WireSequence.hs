@@ -44,7 +44,12 @@ wireSeq :: [(Color, Dest)] -> Bomb ()
 wireSeq ws =
   runSeq ws >>= \case
     Nothing -> output "Overflowed wire count"
-    Just colors -> output (processColors colors)
+    Just colors -> do
+      output (processColors colors)
+      stage <- gets seqStage
+      modify' \s -> case stage of
+        3 -> s {seqStage = 0, redSeq = 0, blueSeq = 0, blackSeq = 0}
+        _ -> s {seqStage = stage + 1}
 
 runSeq :: [(Color, Dest)] -> Bomb (Maybe [(Color, Bool)])
 runSeq =
@@ -102,7 +107,7 @@ processColors [(c1, False), (c2, True), (c3, True)]
 processColors [(c1, False), (c2, True), (c3, False)]
   | c1 == c2 = "Cut the second " <> show c2 <> " wire"
   | c2 == c3 = "Cut the first " <> show c2 <> " wire"
-  | otherwise = "Cut the " <> show c3 <> " wire"
+  | otherwise = "Cut the " <> show c2 <> " wire"
 processColors [(c1, False), (c2, False), (c3, True)]
   | c1 == c3 && c2 == c3 = "Cut the third " <> show c3 <> " wire"
   | c1 == c3 || c2 == c3 = "Cut the second " <> show c3 <> " wire"

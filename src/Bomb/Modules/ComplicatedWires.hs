@@ -55,16 +55,14 @@ instructionToAction :: Instruction -> Bomb ()
 instructionToAction = \case
   Cut -> cut
   DoNotCut -> dont
-  ParallelPort -> withParallel cutIf
-  SerialEven -> withSerialEven cutIf
-  TwoOrMoreBatteries -> withBatteries \case
-    Two -> cut
-    MoreThanTwo -> cut
-    LessThanTwo -> dont
+  ParallelPort -> askParallel >>= cutIf
+  SerialEven -> askSerialEven >>= cutIf
+  TwoOrMoreBatteries -> askBatteries (/= LessThanTwo) >>= cutIf
 
 cut, dont :: Bomb ()
 cut = output "Cut the wire"
 dont = output "Do NOT cut the wire"
 
-cutIf :: Bool -> Bomb ()
-cutIf b = if b then cut else dont
+cutIf :: Maybe Bool -> Bomb ()
+cutIf (Just b) = if b then cut else dont
+cutIf Nothing = pure ()

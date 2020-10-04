@@ -50,16 +50,14 @@ readSimon = traverse \case
 simon :: [Color] -> Bomb ()
 simon colors = do
   strike <- gets strikes
-  withSerialVowel \vowel -> do
-    let cs = traverse (\c -> simonData M.!? (c, strike, vowel)) colors
-    case cs of
-      Nothing -> output "Unknown color"
-      Just cs' -> output (show cs')
+  askSerialVowel >>= maybe (pure ()) \vowel ->
+    output . maybe "Unknown color" show $
+      traverse (\c -> simonData M.!? (c, strike, vowel)) colors
 
 simonAll :: Bomb ()
 simonAll = do
   strike <- gets strikes
-  withSerialVowel \vowel ->
+  askSerialVowel >>= maybe (pure ()) \vowel ->
     output case traverse (\c -> simonData M.!? (c, strike, vowel)) topRow of
       Just result@[_, _, _, _] ->
         let top = format topRow
@@ -71,11 +69,9 @@ topRow :: [Color]
 topRow = [Red, Blue, Green, Yellow]
 
 format :: [Color] -> String
-format =
-  foldr
-    ( \color acc ->
-        "| "
-          <> case color of Red -> "R "; Blue -> "B "; Green -> "G "; Yellow -> "Y "
-          <> acc
-    )
-    "|"
+format = foldr go "|"
+  where
+    go color acc =
+      "| "
+        <> case color of Red -> "R "; Blue -> "B "; Green -> "G "; Yellow -> "Y "
+        <> acc

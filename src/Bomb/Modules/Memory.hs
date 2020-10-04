@@ -34,10 +34,10 @@ mem disp = do
       "4" -> pressPos =<< getPos 2
       _ -> output "Display must read 1, 2, 3, or 4"
     5 -> case disp of
-      "1" -> pressLabel =<< getLabel 1
-      "2" -> pressLabel =<< getLabel 2
-      "3" -> pressLabel =<< getLabel 4
-      "4" -> pressLabel =<< getLabel 3
+      "1" -> pressFinal =<< getLabel 1
+      "2" -> pressFinal =<< getLabel 2
+      "3" -> pressFinal =<< getLabel 4
+      "4" -> pressFinal =<< getLabel 3
       _ -> output "Display must read 1, 2, 3, or 4"
     _ -> error $ "Invalid memory stage " <> show stage
 
@@ -64,6 +64,17 @@ pressPos (Position n) = do
         Just l | l `elem` ("1234" :: String) ->
           modify' \s -> s {memory = memory s |> (Position n, Label (digitToInt l))}
         _ -> pure ()
+
+pressFinal :: Label -> Bomb ()
+pressFinal (Label l) = do
+  output $
+    "Press the button labeled " <> case l of
+      1 -> "1"
+      2 -> "2"
+      3 -> "3"
+      4 -> "4"
+      _ -> error "unreachable"
+  modify' \s -> s {memory = mempty}
 
 pressLabel :: Label -> Bomb ()
 pressLabel (Label l) = do

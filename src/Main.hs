@@ -79,7 +79,7 @@ loop = do
         ["memory", n] -> mem n
         ["seq", "reset"] -> do
           output "Reset Wire Sequence"
-          modify' \s -> s {redSeq = 0, blueSeq = 0, blackSeq = 0}
+          modify' \s -> s {seqStage = 0, redSeq = 0, blueSeq = 0, blackSeq = 0}
         "seq" : ws -> case readSeq ws of
           Nothing -> output "Wire sequence: seq ra bb kc (red a, blue b, black c)"
           Just ws' -> wireSeq ws'

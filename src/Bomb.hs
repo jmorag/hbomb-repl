@@ -10,24 +10,27 @@ module Bomb
     initialState,
     getLine,
     getChar,
-    withSerialOdd,
-    withSerialEven,
-    withSerialVowel,
-    withParallel,
-    withBatteries,
-    withCAR,
-    withFRK,
+    askSerialOdd,
+    askSerialEven,
+    askSerialVowel,
+    askParallel,
+    askBatteries,
+    askCAR,
+    askFRK,
     Batteries (..),
     Position (..),
     Label (..),
     output,
     module X,
     runBomb,
+    condM,
+    (&&&),
+    just,
   )
 where
 
 import Control.Monad.State.Strict as X
-import RIO as X
+import RIO as X hiding (ask, (&&&))
 import System.Console.Haskeline
 
 data BombState = BombState
@@ -41,7 +44,8 @@ data BombState = BombState
     memory :: !(Seq (Position, Label)),
     redSeq :: !Int,
     blueSeq :: !Int,
-    blackSeq :: !Int
+    blackSeq :: !Int,
+    seqStage :: !Int
   }
   deriving (Show)
 
@@ -64,7 +68,7 @@ getLine :: String -> Bomb (Maybe String)
 getLine = Bomb . getInputLine
 
 initialState :: BombState
-initialState = BombState Nothing Nothing Nothing Nothing 0 Nothing Nothing mempty 0 0 0
+initialState = BombState Nothing Nothing Nothing Nothing 0 Nothing Nothing mempty 0 0 0 0
 
 data Batteries = LessThanTwo | Two | MoreThanTwo deriving (Show, Eq)
 
@@ -96,18 +100,19 @@ instance Num Label where
   signum = error "Not implemented"
   negate = error "Not implemented"
 
-withPossiblyUnknown :: String -> (Lens' BombState (Maybe a)) -> (Char -> Maybe a) -> (a -> Bomb ()) -> Bomb ()
-withPossiblyUnknown message len parseResponse cont =
-  gets (view len) >>= \case
-    Just x -> cont x
+ask :: String -> (Lens' BombState (Maybe a)) -> (Char -> Maybe a) -> (a -> Bool) -> Bomb (Maybe Bool)
+ask message l parseResponse f =
+  gets (view l) >>= \case
+    Just x -> pure (Just (f x))
     Nothing ->
-      getChar (message <> " (Press any other key to abort)\n") <&> join . fmap parseResponse >>= \case
-        Nothing -> pure ()
-        Just r -> modify' (set len (Just r)) >> cont r
+      getChar (message <> " (Press any other key to abort)\n")
+        <&> join . fmap parseResponse >>= \case
+          Nothing -> pure Nothing
+          Just r -> modify' (set l (Just r)) >> pure (Just (f r))
 
-withBatteries :: (Batteries -> Bomb ()) -> Bomb ()
-withBatteries =
-  withPossiblyUnknown
+askBatteries :: (Batteries -> Bool) -> Bomb (Maybe Bool)
+askBatteries =
+  ask
     "How many batteries are there? [0/1/2/3 (or more)]"
     (lens batteries (\st b -> st {batteries = b}))
     \r ->
@@ -117,35 +122,54 @@ withBatteries =
           | r == '2' -> Just Two
           | otherwise -> Nothing
 
-withBool :: String -> (Lens' BombState (Maybe Bool)) -> (Bool -> Bomb ()) -> Bomb ()
-withBool message len =
-  withPossiblyUnknown (message <> " [y/n]") len \case
-    'y' -> Just True
-    'n' -> Just False
-    _ -> Nothing
+askBool :: String -> (Lens' BombState (Maybe Bool)) -> Bomb (Maybe Bool)
+askBool message l =
+  ask
+    (message <> " [y/n]")
+    l
+    \case 'y' -> Just True; 'n' -> Just False; _ -> Nothing
+    id
 
-withSerialOdd,
-  withSerialEven,
-  withSerialVowel,
-  withParallel,
-  withFRK,
-  withCAR ::
-    (Bool -> Bomb ()) -> Bomb ()
-withSerialOdd =
-  withBool "Is the last digit of the serial number odd?" $
+askSerialOdd,
+  askSerialEven,
+  askSerialVowel,
+  askParallel,
+  askFRK,
+  askCAR ::
+    Bomb (Maybe Bool)
+askSerialOdd =
+  askBool "Is the last digit of the serial number odd?" $
     lens (fmap not . serialEven) (\st b -> st {serialEven = fmap not b})
-withSerialEven =
-  withBool "Is the last digit of the serial number even?" $
+askSerialEven =
+  askBool "Is the last digit of the serial number even?" $
     lens serialEven (\st b -> st {serialEven = b})
-withSerialVowel =
-  withBool "Does the serial number have a vowel?" $
+askSerialVowel =
+  askBool "Does the serial number have a vowel?" $
     lens serialVowel (\st b -> st {serialVowel = b})
-withParallel =
-  withBool "Does the bomb have a parallel port?" $
+askParallel =
+  askBool "Does the bomb have a parallel port?" $
     lens parallel (\st b -> st {parallel = b})
-withFRK =
-  withBool "Is there a lit indicator with the label FRK?" $
+askFRK =
+  askBool "Is there a lit indicator with the label FRK?" $
     lens frk (\st b -> st {frk = b})
-withCAR =
-  withBool "Is there a lit indicator with the label CAR?" $
+askCAR =
+  askBool "Is there a lit indicator with the label CAR?" $
     lens car (\st b -> st {car = b})
+
+condM :: Monad m => [(m (Maybe Bool), m ())] -> m ()
+condM [] = error "Reached end of condM without a match"
+condM ((cond, action) : rest) =
+  cond >>= \case
+    Just True -> action
+    Just False -> condM rest
+    Nothing -> pure ()
+
+(&&&) :: (Monad m) => m (Maybe Bool) -> m (Maybe Bool) -> m (Maybe Bool)
+mx &&& my =
+  mx >>= \case
+    Just True -> my
+    Just False -> just False
+    Nothing -> pure Nothing
+
+just :: (Applicative m) => a -> m (Maybe a)
+just = pure . Just
