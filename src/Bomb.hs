@@ -44,7 +44,8 @@ data BombState = BombState
     memory :: !(Seq (Position, Label)),
     redSeq :: !Int,
     blueSeq :: !Int,
-    blackSeq :: !Int
+    blackSeq :: !Int,
+    seqStage :: !Int
   }
   deriving (Show)
 
@@ -67,7 +68,7 @@ getLine :: String -> Bomb (Maybe String)
 getLine = Bomb . getInputLine
 
 initialState :: BombState
-initialState = BombState Nothing Nothing Nothing Nothing 0 Nothing Nothing mempty 0 0 0
+initialState = BombState Nothing Nothing Nothing Nothing 0 Nothing Nothing mempty 0 0 0 0
 
 data Batteries = LessThanTwo | Two | MoreThanTwo deriving (Show, Eq)
 
