@@ -88,9 +88,9 @@ loop = do
           Nothing -> output "Usage: simon rgby"
           Just colors -> simon colors
         ["strike"] -> do
-          modify' \s -> s {strikes = (strikes s) + 1}
+          modify' \s -> s {strikes = strikes s + 1}
           curStrikes <- gets strikes
-          output ((show curStrikes) ++ " strike" ++ if curStrikes == 1 then "" else "s")
+          output (show curStrikes ++ " strike" ++ if curStrikes == 1 then "" else "s")
         ["wires", ws] -> case readSimpleWires ws of
           Just wires -> simpleWires wires
           Nothing -> output "Simple wires must be one of ['r' (red), 'b' (blue), 'k' (black), 'w' (white), 'y' (yellow)]"

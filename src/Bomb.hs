@@ -56,7 +56,7 @@ instance MonadState BombState Bomb where
   state = Bomb . lift . state
 
 runBomb :: Bomb () -> BombState -> IO ()
-runBomb bomb st = evalStateT (runInputT defaultSettings (unBomb bomb)) st
+runBomb bomb = evalStateT (runInputT defaultSettings (unBomb bomb))
 
 output :: String -> Bomb ()
 output = Bomb . outputStrLn
@@ -100,15 +100,15 @@ instance Num Label where
   signum = error "Not implemented"
   negate = error "Not implemented"
 
-ask :: String -> (Lens' BombState (Maybe a)) -> (Char -> Maybe a) -> (a -> Bool) -> Bomb (Maybe Bool)
+ask :: String -> Lens' BombState (Maybe a) -> (Char -> Maybe a) -> (a -> Bool) -> Bomb (Maybe Bool)
 ask message l parseResponse f =
   gets (view l) >>= \case
     Just x -> pure (Just (f x))
-    Nothing ->
-      getChar (message <> " (Press any other key to abort)\n")
-        <&> join . fmap parseResponse >>= \case
-          Nothing -> pure Nothing
-          Just r -> modify' (set l (Just r)) >> pure (Just (f r))
+    Nothing -> do
+      resp <- getChar (message <> " (Press any other key to abort)\n")
+      case parseResponse =<< resp of
+        Nothing -> pure Nothing
+        Just r -> modify' (set l (Just r)) >> pure (Just (f r))
 
 askBatteries :: (Batteries -> Bool) -> Bomb (Maybe Bool)
 askBatteries =
@@ -122,7 +122,7 @@ askBatteries =
           | r == '2' -> Just Two
           | otherwise -> Nothing
 
-askBool :: String -> (Lens' BombState (Maybe Bool)) -> Bomb (Maybe Bool)
+askBool :: String -> Lens' BombState (Maybe Bool) -> Bomb (Maybe Bool)
 askBool message l =
   ask
     (message <> " [y/n]")
