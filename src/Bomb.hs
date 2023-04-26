@@ -50,7 +50,7 @@ data BombState = BombState
   deriving (Show)
 
 newtype Bomb a = Bomb {unBomb :: InputT (StateT BombState IO) a}
-  deriving (Functor, Applicative, Monad, MonadIO, MonadException)
+  deriving (Functor, Applicative, Monad, MonadIO)
 
 instance MonadState BombState Bomb where
   state = Bomb . lift . state
