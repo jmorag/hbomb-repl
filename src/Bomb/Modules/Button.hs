@@ -58,6 +58,6 @@ press = output "Press and immediately release the button"
 hold :: Bomb ()
 hold = do
   output "Hold the button"
-  output "Blue strip: release when the countdown timer as a 4 in any position"
-  output "Yellow strip: release when the countdown timer as a 5 in any position"
-  output "Any other color strip: release when the countdown timer as a 1 in any position"
+  output "Blue strip: release when the countdown timer has a 4 in any position"
+  output "Yellow strip: release when the countdown timer has a 5 in any position"
+  output "Any other color strip: release when the countdown timer has a 1 in any position"
