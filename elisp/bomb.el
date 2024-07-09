@@ -238,7 +238,7 @@
    ("t" "Text" "--text=" :choices ("abort" "detonate" "hold" "press") :always-read t)
    ("c" "Color" "--color=" :choices ("blue" "white" "yellow" "red") :always-read t)]
   ["Actions"
-   ("r" "Run" bomb--button-compute :transient nil)
+   ("RET" "Run" bomb--button-compute :transient nil)
    ("q" "Back" (lambda () (interactive) nil) :transient nil)])
 
 (defun bomb--complicated-wires-compute ()
@@ -249,35 +249,109 @@
          (blue (transient-arg-value "--blue" args))
          (star (transient-arg-value "--star" args))
          (led (transient-arg-value "--led" args)))
-    (cl-flet
+    (cl-flet*
         ((cut () (message "Cut the wire"))
-         (dont () (message "Do NOT cut the wire")))
+         (dont () (message "Do NOT cut the wire"))
+         (parallel () (if (bomb--ask-parallel) (cut) (dont)))
+         (serial-even () (if (not (bomb--ask-serial-odd)) (cut) (dont)))
+         (two-or-more-batteries () (if (>= (bomb--ask-batteries) 2) (cut) (dont))))
       (pcase (list red blue star led)
-        (`(t t t t) (dont))
-        (`(t t t nil) (if (bomb--ask-parallel) (cut) (dont)))
-        (`(t t nil t) (if (not (bomb--ask-serial-odd)) (cut) (dont)))
-        (`(t t nil nil) (if (not (bomb--ask-serial-odd)) (cut) (dont)))
-        (`(t nil t t) (if (>= (bomb--ask-batteries) 2) (cut) (dont)))
-        (`(t nil t nil) (cut))
-        (`(t nil nil t) (if (>= (bomb--ask-batteries) 2) (cut) (dont)))
-        (`(t ni nil nil) (if (not (bomb--ask-serial-odd)) (cut) (dont)))
-        (`(nil t t t) (if (bomb--ask-parallel) (cut) (dont)))
-        (`(nil t t nil) (dont))
-        (`(nil t nil t) (if (bomb--ask-parallel) (cut) (dont)))
-        (`(nil t nil nil) (if (not (bomb--ask-serial-odd)) (cut) (dont)))
-        (`(nil nil t t) (if (>= (bomb--ask-batteries) 2) (cut) (dont)))
-        (`(nil nil t nil) (cut))
-        (`(nil nil nil t) (dont))
-        (`(nil nil nil nil) (cut))))))
+        ('(t t t t) (dont))
+        ('(t t t nil) (parallel))
+        ('(t t nil t) (serial-even))
+        ('(t t nil nil) (serial-even))
+        ('(t nil t t) (two-or-more-batteries))
+        ('(t nil t nil) (cut))
+        ('(t nil nil t) (two-or-more-batteries))
+        ('(t nil nil nil) (serial-even))
+        ('(nil t t t) (parallel))
+        ('(nil t t nil) (dont))
+        ('(nil t nil t) (parallel))
+        ('(nil t nil nil) (serial-even))
+        ('(nil nil t t) (two-or-more-batteries))
+        ('(nil nil t nil) (cut))
+        ('(nil nil nil t) (dont))
+        ('(nil nil nil nil) (cut))))))
 
 (transient-define-prefix bomb--complicated-wires ()
   ["Wire properties"
-   [("d" "Red" "--red")
+   [("r" "Red" "--red")
     ("b" "Blue" "--blue")
     ("s" "Star" "--star")
     ("l" "LED" "--led")]]
   ["Actions"
-   ("r" "Run" bomb--complicated-wires-compute :transient t)
+   ("RET" "Run" bomb--complicated-wires-compute :transient t)
+   ("q" "Back" (lambda () (interactive) nil) :transient nil)])
+
+(defconst bomb--password-list
+  '("about"
+    "after"
+    "again"
+    "below"
+    "could"
+    "every"
+    "first"
+    "found"
+    "great"
+    "house"
+    "large"
+    "learn"
+    "never"
+    "other"
+    "place"
+    "plant"
+    "point"
+    "right"
+    "small"
+    "sound"
+    "spell"
+    "still"
+    "study"
+    "their"
+    "there"
+    "these"
+    "thing"
+    "think"
+    "three"
+    "water"
+    "where"
+    "which"
+    "world"
+    "would"
+    "write"))
+
+(defun bomb--password-match (input pwd)
+  (-all? #'identity
+         (-zip-with
+          (lambda (pos-letters pwd-char)
+            (let ((pos-letters-list (append pos-letters '())))
+              (or (not pos-letters-list) (member pwd-char pos-letters-list))))
+          input (append pwd '()))))
+
+(defun bomb--passwords-compute ()
+  "Dialog for passwords."
+  (interactive)
+  (let* ((args (transient-args (oref transient-current-prefix command)))
+         (l1 (transient-arg-value "--letter-1=" args))
+         (l2 (transient-arg-value "--letter-2=" args))
+         (l3 (transient-arg-value "--letter-3=" args))
+         (l4 (transient-arg-value "--letter-4=" args))
+         (l5 (transient-arg-value "--letter-5=" args)))
+    (message
+     (mapconcat #'identity
+                (-filter (lambda (pwd) (bomb--password-match (list l1 l2 l3 l4 l5) pwd))
+                         bomb--password-list)
+                " "))))
+
+(transient-define-prefix bomb--passwords ()
+  ["Letter possibilities"
+   [("1" "Letter 1" "--letter-1=")
+    ("2" "Letter 2" "--letter-2=")
+    ("3" "Letter 3" "--letter-3=")
+    ("4" "Letter 4" "--letter-4=")
+    ("5" "Letter 5" "--letter-5=")]]
+  ["Actions"
+   ("RET" "Run" bomb--passwords-compute :transient t)
    ("q" "Back" (lambda () (interactive) nil) :transient nil)])
 
 (transient-define-prefix bomb ()
@@ -292,7 +366,8 @@
   ["Modules"
    ("w" "Simple wires" bomb--simple-wires :transient t)
    ("b" "Button" bomb--button :transient t)
-   ("c" "Complicated wires" bomb--complicated-wires :transient t)]
+   ("c" "Complicated wires" bomb--complicated-wires :transient t)
+   ("p" "Passwords" bomb--passwords :transient t)]
   ["Misc"
    ("-r" "Reset the bomb state" bomb--reset :transient t)
    ("q" "Exit this dialog" (lambda () (interactive) nil) :transient nil)]
