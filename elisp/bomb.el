@@ -49,10 +49,18 @@
       (propertize "|" 'face 'transient-inactive-value))
      (propertize "]" 'face 'transient-inactive-value))))
 
+;; Bomb state
+
 (defvar bomb--serial-parity nil)
 (transient-define-infix bomb--serial-parity-state ()
   :variable 'bomb--serial-parity
   :choices '("even" "odd")
+  :class 'bomb--variable-choices)
+
+(defvar bomb--serial-vowel nil)
+(transient-define-infix bomb--serial-vowel-state ()
+  :variable 'bomb--serial-vowel
+  :choices '("yes" "no")
   :class 'bomb--variable-choices)
 
 (defvar bomb--batteries nil)
@@ -73,6 +81,22 @@
   :choices '("yes" "no")
   :class 'bomb--variable-choices)
 
+(defvar bomb--parallel nil)
+(transient-define-infix bomb--parallel-state ()
+  :variable 'bomb--parallel
+  :choices '("yes" "no")
+  :class 'bomb--variable-choices)
+
+(defun bomb--reset ()
+  "Reset the bomb state."
+  (interactive)
+  (setq bomb--serial-parity nil)
+  (setq bomb--serial-vowel nil)
+  (setq bomb--batteries nil)
+  (setq bomb--car nil)
+  (setq bomb--frk nil)
+  (setq bomb--parallel nil))
+
 (defun bomb--ask-serial-odd ()
   "Determine if the last digit of the serial number is odd."
   (pcase bomb--serial-parity
@@ -81,6 +105,17 @@
     (`nil (let* ((answer (y-or-n-p "Is the last digit of the serial number odd?"))
                  (value (if answer "odd" "even")))
             (setq bomb--serial-parity value)
+            answer))))
+
+(defun bomb--ask-serial-vowel ()
+  "Determine if the serial number has a vowel."
+  (interactive)
+  (pcase bomb--serial-vowel
+    ("yes" t)
+    ("no" nil)
+    (`nil (let* ((answer (y-or-n-p "Does the serial number have a vowel?"))
+                 (value (if answer "yes" "no")))
+            (setq bomb--serial-vowel value)
             answer))))
 
 (defun bomb--ask-batteries ()
@@ -100,18 +135,18 @@
             answer))))
 
 (defun bomb--ask-car ()
-  "Does the bomb have a lit indicator CAR?"
+  "Determine if the bomb has a lit indicator CAR."
   (interactive)
   (pcase bomb--car
     ("yes" t)
     ("no" nil)
-    (`nil (let* ((answer (y-or-n-p "Does the bomb have a lit indicator CAR? "))
+    (`nil (let* ((answer (y-or-n-p "Does the bomb have a lit indicator CAR?"))
                  (value (if answer "yes" "no")))
             (setq bomb--car value)
             answer))))
 
 (defun bomb--ask-frk ()
-  "Does the bomb have a lit indicator FRK?"
+  "Determine if the bomb has a lit indicator FRK."
   (interactive)
   (pcase bomb--frk
     ("yes" t)
@@ -121,6 +156,18 @@
             (setq bomb--frk value)
             answer))))
 
+(defun bomb--ask-parallel ()
+  "Determine if the bomb has a parallel port."
+  (interactive)
+  (pcase bomb--parallel
+    ("yes" t)
+    ("no" nil)
+    (`nil (let* ((answer (y-or-n-p "Does the bomb have a parallel port?"))
+                 (value (if answer "yes" "no")))
+            (setq bomb--parallel value)
+            answer))))
+
+;; Module logic
 (defun bomb--simple-wires ()
   "Dialog for simple wires."
   (interactive)
@@ -194,16 +241,64 @@
    ("r" "Run" bomb--button-compute :transient nil)
    ("q" "Back" (lambda () (interactive) nil) :transient nil)])
 
+(defun bomb--complicated-wires-compute ()
+  "Dialog for complicated wires."
+  (interactive)
+  (let* ((args (transient-args (oref transient-current-prefix command)))
+         (red (transient-arg-value "--red" args))
+         (blue (transient-arg-value "--blue" args))
+         (star (transient-arg-value "--star" args))
+         (led (transient-arg-value "--led" args)))
+    (cl-flet
+        ((cut () (message "Cut the wire"))
+         (dont () (message "Do NOT cut the wire")))
+      (pcase (list red blue star led)
+        (`(t t t t) (dont))
+        (`(t t t nil) (if (bomb--ask-parallel) (cut) (dont)))
+        (`(t t nil t) (if (not (bomb--ask-serial-odd)) (cut) (dont)))
+        (`(t t nil nil) (if (not (bomb--ask-serial-odd)) (cut) (dont)))
+        (`(t nil t t) (if (>= (bomb--ask-batteries) 2) (cut) (dont)))
+        (`(t nil t nil) (cut))
+        (`(t nil nil t) (if (>= (bomb--ask-batteries) 2) (cut) (dont)))
+        (`(t ni nil nil) (if (not (bomb--ask-serial-odd)) (cut) (dont)))
+        (`(nil t t t) (if (bomb--ask-parallel) (cut) (dont)))
+        (`(nil t t nil) (dont))
+        (`(nil t nil t) (if (bomb--ask-parallel) (cut) (dont)))
+        (`(nil t nil nil) (if (not (bomb--ask-serial-odd)) (cut) (dont)))
+        (`(nil nil t t) (if (>= (bomb--ask-batteries) 2) (cut) (dont)))
+        (`(nil nil t nil) (cut))
+        (`(nil nil nil t) (dont))
+        (`(nil nil nil nil) (cut))))))
+
+(transient-define-prefix bomb--complicated-wires ()
+  ["Wire properties"
+   [("d" "Red" "--red")
+    ("b" "Blue" "--blue")
+    ("s" "Star" "--star")
+    ("l" "LED" "--led")]]
+  ["Actions"
+   ("r" "Run" bomb--complicated-wires-compute :transient t)
+   ("q" "Back" (lambda () (interactive) nil) :transient nil)])
+
 (transient-define-prefix bomb ()
   "Top level bomb manual interface."
   ["State"
-   ("-s" "Parity of the last digit of the serial number" bomb--serial-parity-state)
-   ("-b" "Number of batteries" bomb--batteries-state)
-   ("-c" "Is there a lit indicator with the label CAR?" bomb--car-state)
-   ("-f" "Is there a lit indicator with the label FRK?" bomb--frk-state)]
+   [("-s" "Parity of the last digit of the serial number" bomb--serial-parity-state)
+    ("-v" "Does the serial number have a vowel?" bomb--serial-vowel-state)
+    ("-b" "Number of batteries" bomb--batteries-state)
+    ("-c" "Is there a lit indicator with the label CAR?" bomb--car-state)
+    ("-f" "Is there a lit indicator with the label FRK?" bomb--frk-state)
+    ("-p" "Does the bomb have a parallel port?" bomb--parallel-state)]]
   ["Modules"
    ("w" "Simple wires" bomb--simple-wires :transient t)
-   ("b" "Button" bomb--button :transient t)])
+   ("b" "Button" bomb--button :transient t)
+   ("c" "Complicated wires" bomb--complicated-wires :transient t)]
+  ["Misc"
+   ("-r" "Reset the bomb state" bomb--reset :transient t)
+   ("q" "Exit this dialog" (lambda () (interactive) nil) :transient nil)]
+  (interactive)
+  (bomb--reset)
+  (transient-setup 'bomb))
 
 (provide 'bomb)
 ;;; bomb.el ends here
