@@ -87,6 +87,9 @@
   :choices '("yes" "no")
   :class 'bomb--variable-choices)
 
+(defvar bomb--memory-stage 1)
+(defvar bomb--memory-list '() "List of (pos . label) pairs.")
+
 (defun bomb--reset ()
   "Reset the bomb state."
   (interactive)
@@ -95,7 +98,9 @@
   (setq bomb--batteries nil)
   (setq bomb--car nil)
   (setq bomb--frk nil)
-  (setq bomb--parallel nil))
+  (setq bomb--parallel nil)
+  (setq bomb--memory-stage 1)
+  (setq bomb--memory-list nil))
 
 (defun bomb--ask-serial-odd ()
   "Determine if the last digit of the serial number is odd."
@@ -354,6 +359,80 @@
    ("RET" "Run" bomb--passwords-compute :transient t)
    ("q" "Back" (lambda () (interactive) nil) :transient nil)])
 
+(defun bomb--read-1-4 (prompt) (- (read-char-choice prompt '(?1 ?2 ?3 ?4)) ?0))
+
+(defun bomb--press-pos (n)
+  (let* ((nth (pcase n (1 "1st") (2 "2nd") (3 "3rd") (4 "4th")))
+         (message (format "Press the button in the %s position. What is the label? " nth))
+         (label (bomb--read-1-4 message)))
+    (cl-incf bomb--memory-stage)
+    (push (cons n label) bomb--memory-list)))
+
+(defun bomb--press-label (l)
+  (let* ((message (format "Press the button labeled %s. What is the position? " l))
+         (position (bomb--read-1-4 message)))
+    (cl-incf bomb--memory-stage)
+    (push (cons position l) bomb--memory-list)))
+
+(defun bomb--get-pos (stage)
+  (car (nth (- (length bomb--memory-list) stage) bomb--memory-list)))
+
+(defun bomb--get-label (stage)
+  (cdr (nth (- (length bomb--memory-list) stage) bomb--memory-list)))
+
+(defun bomb--press-final (l)
+  (message "Press the button labeled %s" l)
+  (setq bomb--memory-stage 1)
+  (setq bomb--memory-list '()))
+
+(defun bomb--memory-compute ()
+  "Dialog for bomb memory."
+  (interactive)
+  (let ((display-number (bomb--read-1-4 "What is on the display? ")))
+    (pcase bomb--memory-stage
+      (1 (pcase display-number
+           (1 (bomb--press-pos 2))
+           (2 (bomb--press-pos 2))
+           (3 (bomb--press-pos 3))
+           (4 (bomb--press-pos 4))))
+      (2 (pcase display-number
+           (1 (bomb--press-label 4))
+           (2 (bomb--press-pos (bomb--get-pos 1)))
+           (3 (bomb--press-pos 1))
+           (4 (bomb--press-pos (bomb--get-pos 1)))))
+      (3 (pcase display-number
+           (1 (bomb--press-label (bomb--get-label 2)))
+           (2 (bomb--press-label (bomb--get-label 1)))
+           (3 (bomb--press-pos 3))
+           (4 (bomb--press-label 4))))
+      (4 (pcase display-number
+           (1 (bomb--press-pos (bomb--get-pos 1)))
+           (2 (bomb--press-pos 1))
+           (3 (bomb--press-pos (bomb--get-pos 2)))
+           (4 (bomb--press-pos (bomb--get-pos 2)))))
+      (5 (pcase display-number
+           (1 (bomb--press-final (bomb--get-label 1)))
+           (2 (bomb--press-final (bomb--get-label 2)))
+           (3 (bomb--press-final (bomb--get-label 4)))
+           (4 (bomb--press-final (bomb--get-label 3))))))))
+
+(transient-define-prefix bomb--memory ()
+  [:description (lambda ()
+                  (format "Current stage: %s%s"
+                          bomb--memory-stage
+                          (apply
+                           #'concat
+                           (-map-indexed
+                            (lambda (ix pos-label)
+                              (format "\n  Stage %s:\n    Position: %s\n    Label: %s"
+                                      (- bomb--memory-stage ix 1) (car pos-label) (cdr pos-label)))
+                            bomb--memory-list))))
+                ("d" "Read display" bomb--memory-compute :transient t)
+                ("r" "Reset memory" (lambda () (interactive)
+                                      (setq bomb--memory-stage 1)
+                                      (setq bomb--memory-list '())) :transient t)
+                ("q" "Back" (lambda () (interactive)) :transient nil)])
+
 (transient-define-prefix bomb ()
   "Top level bomb manual interface."
   ["State"
@@ -367,7 +446,8 @@
    ("w" "Simple wires" bomb--simple-wires :transient t)
    ("b" "Button" bomb--button :transient t)
    ("c" "Complicated wires" bomb--complicated-wires :transient t)
-   ("p" "Passwords" bomb--passwords :transient t)]
+   ("p" "Passwords" bomb--passwords :transient t)
+   ("m" "Memory" bomb--memory :transient t)]
   ["Misc"
    ("-r" "Reset the bomb state" bomb--reset :transient t)
    ("q" "Exit this dialog" (lambda () (interactive) nil) :transient nil)]
